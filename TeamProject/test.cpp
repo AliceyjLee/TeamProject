@@ -4,5 +4,5 @@ int square(int a, int b) {
 }
 int main() {
 
-	std::cout << "Bye!" << std::endl;
+	std::cout << "Good to see you again!" << std::endl;
 }
