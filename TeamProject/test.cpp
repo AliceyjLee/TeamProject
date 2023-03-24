@@ -1,8 +1,9 @@
 #include <iostream>
 int square(int a, int b) {
-	return a * b;
+	int result = a * b;
+	return result;
 }
 int main() {
 
-	std::cout << "Bye!" << std::endl;
+	std::cout << "Good to see you again!" << std::endl;
 }
