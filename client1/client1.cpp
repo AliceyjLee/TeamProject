@@ -5,6 +5,12 @@
 #include <sstream>
 #include <thread>
 #include <WS2tcpip.h>
+#include <stdlib.h> 
+#include "mysql_connection.h" 
+#include <cppconn/driver.h> 
+#include <cppconn/exception.h> 
+#include <cppconn/prepared_statement.h> 
+
 #define MAX_SIZE 1024
 using std::cout;
 using std::cin;
@@ -12,6 +18,19 @@ using std::endl;
 using std::string;
 SOCKET client_sock;
 string my_nick;
+
+using namespace std;
+
+const string server = "tcp://127.0.0.1:3306"; // 데이터베이스 주소 
+const string username = "user"; // 데이터베이스 사용자 
+const string password = "1234"; // 데이터베이스 접속 비밀번호 
+
+sql::Driver* driver;
+sql::Connection* con;
+sql::Statement* stmt;
+sql::PreparedStatement* pstmt;
+sql::ResultSet* result;
+
 
 int chat_recv() {
 	char buf[MAX_SIZE] = {}; //메시지 입력, 출력 위함
@@ -38,7 +57,7 @@ int main() {
 	WSADATA wsa;
 	int code = WSAStartup(MAKEWORD(2, 2), &wsa);
 
-	string nick_name;
+	string nick;
 	string name;
 	string id;
 	string pw;
@@ -46,7 +65,20 @@ int main() {
 
 	//로그인 
 
+	
+	string input_id, input_pw;
 
+	cout << "아이디를 입력하세요 -> \n";
+	cin >> input_id;
+	cout << "비밀번호를 입력하세요 -> \n";
+	cin >> input_pw;
+
+	if (input_id == nick && input_pw == pw ) {
+		cout << "로그인 성공! \n";
+	}
+	else {
+		cout << "로그인 실패 \n";
+	}
 
 
 	if (!code) {
