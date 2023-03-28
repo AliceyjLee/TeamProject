@@ -18,7 +18,7 @@ sql::ResultSet* result;
 
 void create_table();
 void information_insert(string nick, string name, string id, string pw);
-void information_insert(int index, string nick, string msg);
+void message_insert(int index, string nick, string msg);
 
 int main()
 {
@@ -52,6 +52,8 @@ int main()
 
 
 
+
+
     delete pstmt;
     delete con;
     system("pause");
@@ -81,11 +83,11 @@ void create_table() {
     //cout << "Finished creating table" << endl;
     delete stmt;
 
-    // massage 테이블 생성
+    // message 테이블 생성
     stmt = con->createStatement(); //회원가입 내역 저장 시 워크벤치에서 미리 테이블 생성하기(insert기능만 구현)
-    stmt->execute("DROP TABLE IF EXISTS massage"); // 회원가입 내역 저장 시 지워주기
+    stmt->execute("DROP TABLE IF EXISTS message"); // 회원가입 내역 저장 시 지워주기
     cout << "Finished dropping table (if existed)" << endl;// 회원가입 내역 저장 시 지워주기
-    stmt->execute("CREATE TABLE massage (index serial PRIMARY KEY, user_nick_name VARCHAR(20), massage VARCHAR(100));");
+    stmt->execute("CREATE TABLE message (index serial PRIMARY KEY, user_nick_name VARCHAR(20), message VARCHAR(100));");
     //cout << "Finished creating table" << endl;
     delete stmt;
 
@@ -102,9 +104,9 @@ void information_insert(string nick, string name, string id, string pw) {
     //cout << "One row inserted." << endl;
 }
 
-void massage_insert(int index, string nick, string msg) {
-    //massage insert
-    pstmt = con->prepareStatement("INSERT INTO massage(index, user_nick_name,massage) VALUES(?,?,?)");
+void message_insert(int index, string nick, string msg) {
+    //message insert
+    pstmt = con->prepareStatement("INSERT INTO message(index, user_nick_name,message) VALUES(?,?,?)");
     pstmt->setInt(1, index); //idx (한번 입력할때마다 count되는 변수 생성) 
     pstmt->setString(2, nick); //닉네임
     pstmt->setString(3, msg); //메세지

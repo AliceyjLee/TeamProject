@@ -118,14 +118,14 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>STATIC_CONCPP;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\KIM\Documents\libraries\mysql8.0.32-64\include\jdbc</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\alice\OneDrive\문서\libraries\mysql8.0.32-64\include\jdbc</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Users\KIM\Documents\libraries\mysql8.0.32-64\lib64\vs14</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Users\alice\OneDrive\문서\libraries\mysql8.0.32-64\lib64\vs14;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>mysqlcppconn-static.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>

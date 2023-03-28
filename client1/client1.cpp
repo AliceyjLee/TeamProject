@@ -5,6 +5,13 @@
 #include <sstream>
 #include <thread>
 #include <WS2tcpip.h>
+#include <stdlib.h> 
+#include "mysql_connection.h" 
+#include <cppconn/driver.h> 
+#include <cppconn/exception.h> 
+#include <cppconn/prepared_statement.h> 
+
+
 #define MAX_SIZE 1024
 using std::cout;
 using std::cin;
@@ -12,6 +19,44 @@ using std::endl;
 using std::string;
 SOCKET client_sock;
 string my_nick;
+
+using namespace std;
+
+
+const string server = "tcp://127.0.0.1:3306"; // 데이터베이스 주소 
+const string username = "project"; // 데이터베이스 사용자 
+const string password = "1234"; // 데이터베이스 접속 비밀번호 
+
+sql::Driver* driver;
+sql::Connection* con;
+sql::Statement* stmt;
+sql::PreparedStatement* pstmt;
+sql::ResultSet* result;
+
+
+void Login_client() {
+
+	try
+	{
+		driver = get_driver_instance();
+		//for demonstration only. never save password in the code!
+		con = driver->connect(server, username, password);
+	}
+	catch (sql::SQLException e)
+	{
+		cout << "Could not connect to server. Error message: " << e.what() << endl;
+		system("pause");
+		exit(1);
+	}
+
+
+	delete result;
+	delete pstmt;
+	delete con;
+	system("pause");
+
+}
+
 
 int chat_recv() {
 	char buf[MAX_SIZE] = {}; //메시지 입력, 출력 위함
@@ -34,19 +79,69 @@ int chat_recv() {
 		}
 	}
 }
+
 int main() {
 	WSADATA wsa;
 	int code = WSAStartup(MAKEWORD(2, 2), &wsa);
 
-	string nick_name;
-	string name;
-	string id;
-	string pw;
-
-
+	
 	//로그인 
 
+	string input_id, input_pw;
 
+	while (true) {
+
+		cout << "아이디를 입력하세요 -> \n";
+		cin >> input_id;
+		cout << "비밀번호를 입력하세요 -> \n";
+		cin >> input_pw;
+
+		try
+		{
+			driver = get_driver_instance();
+			//for demonstration only. never save password in the code!
+			con = driver->connect(server, username, password);
+		}
+		catch (sql::SQLException e)
+		{
+			cout << "Could not connect to server. Error message: " << e.what() << endl;
+			system("pause");
+			exit(1);
+		}
+		con->setSchema("chatprogram");
+
+		//select  
+		pstmt = con->prepareStatement("SELECT * FROM information;");
+		result = pstmt->executeQuery();
+
+		string find_id, find_pw;
+
+		while (result->next()) {
+
+
+
+			find_id = result->getString("id");
+			find_pw = result->getString("pw");
+			cout << find_id << endl;
+			cout << find_pw << endl;
+
+
+
+			if (find_id == input_id) {
+				cout << "로그인 성공! \n";
+				break;
+			}
+			else {
+				cout << "정보가 없거나 잘못된 회원정보를 입력하셨습니다. \n";
+				cout << "다시 시도하세요. \n";
+			}
+		}
+	}
+	
+	delete result;
+	delete pstmt;
+	delete con;
+	system("pause");
 
 
 	if (!code) {

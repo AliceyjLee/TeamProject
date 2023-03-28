@@ -19,9 +19,9 @@ using std::endl;
 using std::string;
 
 
-const string server = "tcp://127.0.0.1:3306"; // µ¥ÀÌÅÍº£ÀÌ½º ÁÖ¼Ò 
-const string username = "project"; // µ¥ÀÌÅÍº£ÀÌ½º »ç¿ëÀÚ 
-const string password = "1234"; // µ¥ÀÌÅÍº£ÀÌ½º Á¢¼Ó ºñ¹Ð¹øÈ£ 
+const string server = "tcp://127.0.0.1:3306"; // ï¿½ï¿½ï¿½ï¿½ï¿½Íºï¿½ï¿½Ì½ï¿½ ï¿½Ö¼ï¿½ 
+const string username = "project"; // ï¿½ï¿½ï¿½ï¿½ï¿½Íºï¿½ï¿½Ì½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ 
+const string password = "1234"; // ï¿½ï¿½ï¿½ï¿½ï¿½Íºï¿½ï¿½Ì½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½Ð¹ï¿½È£ 
 
 sql::Driver* driver;
 sql::Connection* con;
@@ -38,11 +38,11 @@ std::vector<SOCKET_INFO> sck_list;
 SOCKET_INFO server_sock;
 int client_count = 0;
 
-void server_init(); // 1. ¼ÒÄÏ ÃÊ±âÈ­
-void add_client(); // 2. Å¬¶óÀÌ¾ðÆ® Ãß°¡
-void send_msg(const char* msg); //3. Å¬¶óÀÌ¾ðÆ®¿¡°Ô msg º¸³»±â
-void recv_msg(int idx); // 4. Å¬¶óÀÌ¾ðÆ®¿¡°Ô Ã¤ÆÃ ³»¿ëÀ» ¹ÞÀ½
-void del_client(int idx); // 5. ¼ÒÄÏ ´Ý¾ÆÁÜ
+void server_init(); // 1. ï¿½ï¿½ï¿½ï¿½ ï¿½Ê±ï¿½È­
+void add_client(); // 2. Å¬ï¿½ï¿½ï¿½Ì¾ï¿½Æ® ï¿½ß°ï¿½
+void send_msg(const char* msg); //3. Å¬ï¿½ï¿½ï¿½Ì¾ï¿½Æ®ï¿½ï¿½ï¿½ï¿½ msg ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+void recv_msg(int idx); // 4. Å¬ï¿½ï¿½ï¿½Ì¾ï¿½Æ®ï¿½ï¿½ï¿½ï¿½ Ã¤ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
+void del_client(int idx); // 5. ï¿½ï¿½ï¿½ï¿½ ï¿½Ý¾ï¿½ï¿½ï¿½
 void create_table();
 
 int main() {
@@ -61,7 +61,7 @@ int main() {
 
 	WSADATA wsa;
 	int code = WSAStartup(MAKEWORD(2, 2), &wsa);
-	create_table();  //¸Þ½ÃÁö_Å×ÀÌºí »ý¼ºÇÏ°í ½ÃÀÛÇÏ±â ////////////////////////¿©±â ¼öÁ¤ 
+	create_table();  //ï¿½Þ½ï¿½ï¿½ï¿½_ï¿½ï¿½ï¿½Ìºï¿½ ï¿½ï¿½ï¿½Ï°ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï±ï¿½ ////////////////////////ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ 
 
 	if (!code) {
 		server_init();
@@ -89,7 +89,7 @@ int main() {
 	}
 }
 
-//1. ¼ÒÄÏ ÃÊ±âÈ­
+//1. ï¿½ï¿½ï¿½ï¿½ ï¿½Ê±ï¿½È­
 void server_init() {
 	server_sock.sck = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
@@ -108,7 +108,7 @@ void server_init() {
 	cout << "server On!" << endl;
 }
 
-//2. Å¬¶óÀÌ¾ðÆ® ¿¬°á & Ãß°¡
+//2. Å¬ï¿½ï¿½ï¿½Ì¾ï¿½Æ® ï¿½ï¿½ï¿½ï¿½ & ï¿½ß°ï¿½
 void add_client() {
 	SOCKADDR_IN addr = {};
 
@@ -127,7 +127,7 @@ void add_client() {
 	new_client.user = string(buf);
 
 
-	string msg = "[°øÁö]" + new_client.user + "´ÔÀÌ ÀÔÀåÇß½À´Ï´Ù!";
+	string msg = "[ï¿½ï¿½ï¿½ï¿½]" + new_client.user + "ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ß½ï¿½Ï´ï¿½!";
 	cout << msg << endl;
 
 	sck_list.push_back(new_client);
@@ -136,7 +136,7 @@ void add_client() {
 	std::thread th(recv_msg, client_count);
 	client_count++;
 
-	cout << "[°øÁö] ÇöÀç Á¢¼ÓÀÚ ¼ö : " << client_count << "¸í" << endl;
+	cout << "[ï¿½ï¿½ï¿½ï¿½] ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ : " << client_count << "ï¿½ï¿½" << endl;
 	send_msg(msg.c_str());
 
 	th.join();
@@ -169,13 +169,13 @@ void recv_msg(int idx) {
 
 
 
-			//cout <<"test" << buf << endl;   ////////¿©±â ¼öÁ¤ !!
-			//cout << "test" << sck_list[idx].user << endl;   ////////¿©±â ¼öÁ¤ !!
+			//cout <<"test" << buf << endl;   ////////ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ !!
+			//cout << "test" << sck_list[idx].user << endl;   ////////ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ !!
 
 			send_msg(msg.c_str());
 		}
 		else {
-			msg = "[°øÁö]" + sck_list[idx].user + "´ÔÀÌ ÅðÀåÇß½À´Ï´Ù.";
+			msg = "[ï¿½ï¿½ï¿½ï¿½]" + sck_list[idx].user + "ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ß½ï¿½Ï´ï¿½.";
 			cout << msg << endl;
 			send_msg(msg.c_str());
 			del_client(idx);
@@ -203,12 +203,11 @@ void create_table() {
 
 	con->setSchema("chatprogram");
 
-	// message Å×ÀÌºí »ý¼º
-	stmt = con->createStatement(); //È¸¿ø°¡ÀÔ ³»¿ª ÀúÀå ½Ã ¿öÅ©º¥Ä¡¿¡¼­ ¹Ì¸® Å×ÀÌºí »ý¼ºÇÏ±â
+	// message ï¿½ï¿½ï¿½Ìºï¿½ ï¿½ï¿½
+	stmt = con->createStatement(); //È¸ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½Å©ï¿½ï¿½Ä¡ï¿½ï¿½ï¿½ï¿½ ï¿½Ì¸ï¿½ ï¿½ï¿½ï¿½Ìºï¿½ ï¿½ï¿½ï¿½Ï±ï¿½
 	stmt->execute("DROP TABLE IF EXISTS message"); 
 	cout << "Finished dropping table (if existed)" << endl;
 	stmt->execute("CREATE TABLE message (user_index serial PRIMARY KEY, user_nick_name VARCHAR(50), user_message VARCHAR(100));");
 	cout << "Finished creating table" << endl;
-	
 
 }
