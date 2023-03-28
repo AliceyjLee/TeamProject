@@ -91,20 +91,16 @@ int main() {
 		result = pstmt->executeQuery();
 
 		string find_id, find_pw;
+		bool temp;
 
 		while (result->next()) {
 
-
-
 			find_id = result->getString("id");
 			find_pw = result->getString("pw");
-			cout << find_id << endl;
-			cout << find_pw << endl;
-
-
+			
 
 			if (find_id == input_id) {
-				cout << "로그인 성공! \n";
+				cout << "로그인 성공! \n";		
 				break;
 			}
 			else {
