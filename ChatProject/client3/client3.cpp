@@ -28,27 +28,24 @@ string my_nick;
 const string server = "tcp://127.0.0.1:3306"; // 데이터베이스 주소
 const string username = "project"; // 데이터베이스 사용자
 const string password = "1234"; // 데이터베이스 접속 비밀번호
+
+
 int chat_recv() {
-
-	
-	//////////////////////////////////////////////////////////////
-
-
 
 
 
 	char buf[MAX_SIZE] = {}; //메시지 입력, 출력 위함
 	string msg;
 	while (1) {
-		ZeroMemory(&buf, MAX_SIZE); //size만큼 0으로 채워준다 
+		ZeroMemory(&buf, MAX_SIZE);
 		if (recv(client_sock, buf, MAX_SIZE, 0) > 0) {// 0: 정상종료 >0:값이 잘 들어감
 			msg = buf;
 			string user;
 			std::stringstream ss(msg); // stringstream = (slice해줌)-> user랑 masage분리
 			ss >> user;
 
-			//		cout << buf << endl; 
-					// 전체가 보이면 헷갈리기 때문에 내 닉네임이 아닌 경우에만 출력
+			//cout << buf << endl; 
+			// 전체가 보이면 헷갈리기 때문에 내 닉네임이 아닌 경우에만 출력
 			if (user != my_nick) cout << buf << endl; //같은 닉네임이 생성되지 않게 
 		}
 		else {
@@ -58,14 +55,23 @@ int chat_recv() {
 	}
 }
 int main() {
-
-
-	con->setSchema("chatprogram");
+	try
+	{
+		driver = get_driver_instance();
+		//for demonstration only. never save password in the code!
+		con = driver->connect(server, username, password);
+	}
+	catch (sql::SQLException e)
+	{
+		cout << "Could not connect to server. Error message: " << e.what() << endl;
+		system("pause");
+		exit(1);
+	}
+	///////////////// 이전기록 출력////////////////////////////////////
 	string find_user, find_msg;
 
-
 	cout << "server의 기록을 출력합니다" << endl;
-
+	con->setSchema("chatprogram");
 	pstmt = con->prepareStatement("SELECT user_nick_name,user_message FROM message;");
 	result = pstmt->executeQuery();
 
@@ -74,13 +80,68 @@ int main() {
 		find_msg = result->getString("user_message");
 		cout << find_user << " : " << find_msg << endl;
 	}
+	cout << "------------------------------------------" << endl;
+	///////////////// 로그인 ////////////////////////////////////
+	con->setSchema("chatprogram");
+
+	//string find_id, find_pw;
+	string input_id, input_pw;
+	bool check_id = 1, check_pw = 1;
+
+	while (check_id == 1 || check_pw == 1) {
+
+		check_id = 1, check_pw = 1;
+
+		cout << "아이디를 입력하세요 -> \n";
+		cin >> input_id;
+		cout << "비밀번호를 입력하세요 -> \n";
+		cin >> input_pw;
+
+		// ID 확인 -> check_id == 0;
+		con->setSchema("chatprogram");
+		pstmt = con->prepareStatement("SELECT id FROM information;");
+		result = pstmt->executeQuery();
+
+		while (result->next()) {
+			//find_id = result->getString("id");
+			if (result->getString("id") == input_id) {
+				check_id = 0;
+			}
+		}
+		cout << check_id << endl;
+
+		// PW 확인 -> check_pw == 0;
+		con->setSchema("chatprogram");
+		pstmt = con->prepareStatement("SELECT pw FROM information;");
+		result = pstmt->executeQuery();
+
+		while (result->next()) {
+			//find_pw = result->getString("pw");
+			if (result->getString("pw") == input_pw) {
+				check_pw = 0;
+			}
+		}
+		cout << check_pw << endl;
+
+		if (check_id == 1) {
+			cout << "잘못된 ID입니다." << endl << "다시 입력하세요" << endl;
+		}
+		if (check_pw == 1) {
+			cout << "잘못된 PW입니다." << endl << "다시 입력하세요" << endl;
+		}
+
+	}
 
 
+	////////////////////////////////////////////////////소켓통신  (여기서 메세지 가져와야할듯)
+
+	con->setSchema("chatprogram");
 	WSADATA wsa;
 	int code = WSAStartup(MAKEWORD(2, 2), &wsa);
+	string input_nick;
 	if (!code) {
-		cout << "사용할 닉네임 입력 >>";
-		cin >> my_nick;
+		//cout << "사용할 닉네임 입력 >>";
+		//cin >> my_nick;
 		client_sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
 
 		SOCKADDR_IN client_addr = {};
