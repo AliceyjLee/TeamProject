@@ -249,6 +249,5 @@ void duplicate_login(string input, string query, bool check, string *create_inpu
 		}
 
 		if (check == 1) { cout << "잘못된 " << input << "입니다." << endl << "다시 입력하세요" << endl; }
-		else { break; }
 	}
 }
