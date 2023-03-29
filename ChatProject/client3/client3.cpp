@@ -30,6 +30,10 @@ const string server = "tcp://127.0.0.1:3306"; // 데이터베이스 주소
 const string username = "project"; // 데이터베이스 사용자
 const string password = "1234"; // 데이터베이스 접속 비밀번호
 
+void korean();
+void recv_prev_msg();
+void duplicate_login(string input, string query, bool check, string *create_input);
+
 
 int chat_recv() {
 
@@ -68,33 +72,23 @@ int main() {
 		system("pause");
 		exit(1);
 	}
-	con->setSchema("chatprogram");
-	stmt = con->createStatement();
-	stmt->execute("set names euckr"); // 한글 인코딩을 위함
-	if (stmt) { delete stmt; stmt = nullptr; }
+	korean(); // 한국어 인코딩
 
 	///////////////// 이전기록 출력////////////////////////////////////
-	string find_user, find_msg;
-
-	cout << "server의 기록을 출력합니다" << endl;
-	con->setSchema("chatprogram");
-	pstmt = con->prepareStatement("SELECT user_nick_name,user_message FROM message;");
-	result = pstmt->executeQuery();
-
-	while (result->next()) {
-		find_user = result->getString("user_nick_name");
-		find_msg = result->getString("user_message");
-		cout << find_user << " : " << find_msg << endl;
-	}
-	cout << "------------------------------------------" << endl;
+	
+	recv_prev_msg();
 	
 	///////////////// 로그인 ////////////////////////////////////
+
 	con->setSchema("chatprogram");
 
-	string find_id, find_pw;
 	string input_id, input_pw;
 	bool check_id = 1, check_pw = 1;
 
+	duplicate_login("id", "SELECT id FROM information;", check_id,&input_id); // 로그인-아이디
+	duplicate_login("pw", "SELECT pw FROM information;", check_pw,&input_pw); // 로그인-비번
+
+	/*
 	while (check_id == 1) {
 
 		check_id = 1;
@@ -140,7 +134,7 @@ int main() {
 
 		if (check_pw == 1) { cout << "잘못된 PW입니다." << endl << "다시 입력하세요" << endl; }
 	}
-
+	*/
 
 	////////////////////////////////////////////////////소켓통신  
 	
@@ -202,4 +196,59 @@ int main() {
 	system("pause");
 
 	return 0;
+}
+
+
+void korean() {
+
+	con->setSchema("chatprogram");
+	stmt = con->createStatement();
+	stmt->execute("set names euckr"); // 한글 인코딩을 위함
+	if (stmt) { delete stmt; stmt = nullptr; }
+}
+
+void recv_prev_msg() {
+
+	string find_user, find_msg;
+
+	cout << "server의 기록을 출력합니다" << endl;
+	con->setSchema("chatprogram");
+	pstmt = con->prepareStatement("SELECT user_nick_name,user_message FROM message;");
+	result = pstmt->executeQuery();
+
+	while (result->next()) {
+		find_user = result->getString("user_nick_name");
+		find_msg = result->getString("user_message");
+		cout << find_user << " : " << find_msg << endl;
+	}
+	cout << "------------------------------------------" << endl;
+}
+
+void duplicate_login(string input, string query, bool check, string *create_input) {
+
+	string find;
+
+	while (check == 1) {
+
+		check = 1;
+
+		cout << input << "를 입력하세요 -> \n";
+		cin >> *create_input;
+
+		// ID 확인 -> check_id == 0;
+		con->setSchema("chatprogram");
+		pstmt = con->prepareStatement(query);
+		result = pstmt->executeQuery();
+
+		while (result->next()) {
+			cout << "확인";
+			find = result->getString(input);
+			if (find == *create_input) {
+				check = 0;
+			}
+		}
+
+		if (check == 1) { cout << "잘못된 " << input << "입니다." << endl << "다시 입력하세요" << endl; }
+		else { break; }
+	}
 }
