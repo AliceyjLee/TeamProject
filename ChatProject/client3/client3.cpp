@@ -87,21 +87,20 @@ int main() {
 		cout << find_user << " : " << find_msg << endl;
 	}
 	cout << "------------------------------------------" << endl;
+	
 	///////////////// 로그인 ////////////////////////////////////
 	con->setSchema("chatprogram");
 
-	//string find_id, find_pw;
+	string find_id, find_pw;
 	string input_id, input_pw;
 	bool check_id = 1, check_pw = 1;
 
-	while (check_id == 1 || check_pw == 1) {
+	while (check_id == 1) {
 
-		check_id = 1, check_pw = 1;
+		check_id = 1;
 
 		cout << "아이디를 입력하세요 -> \n";
 		cin >> input_id;
-		cout << "비밀번호를 입력하세요 -> \n";
-		cin >> input_pw;
 
 		// ID 확인 -> check_id == 0;
 		con->setSchema("chatprogram");
@@ -109,12 +108,22 @@ int main() {
 		result = pstmt->executeQuery();
 
 		while (result->next()) {
-			//find_id = result->getString("id");
-			if (result->getString("id") == input_id) {
+			find_id = result->getString("id");
+			if (find_id == input_id) {
 				check_id = 0;
 			}
 		}
 		cout << check_id << endl;
+	
+		if (check_id == 1) {cout << "잘못된 ID입니다." << endl << "다시 입력하세요" << endl;}
+	}
+
+	while (check_pw == 1) {
+
+		check_pw = 1;
+
+		cout << "비밀번호를 입력하세요 -> \n";
+		cin >> input_pw;
 
 		// PW 확인 -> check_pw == 0;
 		con->setSchema("chatprogram");
@@ -122,20 +131,14 @@ int main() {
 		result = pstmt->executeQuery();
 
 		while (result->next()) {
-			//find_pw = result->getString("pw");
-			if (result->getString("pw") == input_pw) {
+			find_pw = result->getString("pw");
+			if (find_pw == input_pw) {
 				check_pw = 0;
 			}
 		}
 		cout << check_pw << endl;
 
-		if (check_id == 1) {
-			cout << "잘못된 ID입니다." << endl << "다시 입력하세요" << endl;
-		}
-		if (check_pw == 1) {
-			cout << "잘못된 PW입니다." << endl << "다시 입력하세요" << endl;
-		}
-
+		if (check_pw == 1) { cout << "잘못된 PW입니다." << endl << "다시 입력하세요" << endl; }
 	}
 
 
