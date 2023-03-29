@@ -34,7 +34,7 @@ int chat_recv() {
 	char buf[MAX_SIZE] = {}; //메시지 입력, 출력 위함
 	string msg;
 	while (1) {
-		ZeroMemory(&buf, MAX_SIZE); //size만큼 0으로 채워준다 
+		ZeroMemory(&buf, MAX_SIZE); 
 		if (recv(client_sock, buf, MAX_SIZE, 0) > 0) {// 0: 정상종료 >0:값이 잘 들어감
 			msg = buf;
 			string user;
@@ -64,62 +64,41 @@ int main() {
 		system("pause");
 		exit(1);
 	}
-	WSADATA wsa;
-	int code = WSAStartup(MAKEWORD(2, 2), &wsa);
 
-	std::string find_id, find_pw;
-	std::string  input_id, input_pw;
+	string find_id, find_pw;
+	string  input_id, input_pw;
+	bool check_id = 0, check_pw = 0;
 
 	con->setSchema("chatprogram");
-
-	//로그인 
+	////////////////////////////////////////////////////////////////////////로그인 
+	//////// 아이디 , 비번 순서대로 입력하고 둘중 하나가 틀렸을 경우 (아이디/비번)중 뭐가 틀렸는지 출력해주고 다시 입력받기 
 	while (true) {
 
-		cout << "아이디를 입력하세요 -> \n";
-		cin >> input_id;
-		cout << "비밀번호를 입력하세요 -> \n";
-		cin >> input_pw;
 
-		//void Login_client();
-
-
-		pstmt = con->prepareStatement("SELECT * FROM information;");
-		result = pstmt->executeQuery();
-		cout << result << endl;
-		while (result->next()) {
-			find_id = result->getString("id");
-			find_pw = result->getString("pw");
-			cout << find_id << endl;
-			cout << find_pw << endl;
-		}
-
-		/*
-		while (result->next())
-			printf("Reading from table=(%d, %s, %d)\n", result->getInt(1), result->getString(2).c_str(), result->getInt(3));
-		*/
+		while (1){ //id, pw 맞게 입력할 때 까지 무한루프 (중간에 join창에서 회원가입 하고 올 수 있음)
+			cout << "아이디를 입력하세요 -> \n";
+			cin >> input_id;
+			cout << "비밀번호를 입력하세요 -> \n";
+			cin >> input_pw;
+			//id, pw 검사 
 
 
 
-		//printf("Reading from table=(%d, %s, %d)\n", result->getInt(1), result->getString(2).c_str(), result->getInt(3));
-
-
-
-		if (result->next()) {
-			cout << "로그인 성공! \n";
-			break;
-		}
-		else {
-			cout << "정보가 없거나 잘못된 회원정보를 입력하셨습니다. \n";
+			cout << "oo을 잘못 입력하셨습니다. \n";
 			cout << "다시 시도하세요. \n";
 		}
+			cout << "로그인 성공! \n";
+			break;
+
 	}
 	//select  
 
 
 
 
-
-
+	////////////////////////////////////////////////////소켓통신  (여기서 메세지 가져와야할듯)
+	WSADATA wsa;
+	int code = WSAStartup(MAKEWORD(2, 2), &wsa);
 	if (!code) {
 		//cout << "사용할 닉네임 입력 >>";
 		//cin >> my_nick;
