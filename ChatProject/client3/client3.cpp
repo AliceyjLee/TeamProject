@@ -10,6 +10,7 @@
 #include <cppconn/driver.h> 
 #include <cppconn/exception.h> 
 #include <cppconn/prepared_statement.h> 
+#include <cppconn/statement.h>
 
 sql::Driver* driver;
 sql::Connection* con;
@@ -67,6 +68,11 @@ int main() {
 		system("pause");
 		exit(1);
 	}
+	con->setSchema("chatprogram");
+	stmt = con->createStatement();
+	stmt->execute("set names euckr"); // 한글 인코딩을 위함
+	if (stmt) { delete stmt; stmt = nullptr; }
+
 	///////////////// 이전기록 출력////////////////////////////////////
 	string find_user, find_msg;
 
@@ -133,12 +139,13 @@ int main() {
 	}
 
 
-	////////////////////////////////////////////////////소켓통신  (여기서 메세지 가져와야할듯)
-
-	con->setSchema("chatprogram");
+	////////////////////////////////////////////////////소켓통신  
+	
+	//con->setSchema("chatprogram");
 	WSADATA wsa;
 	int code = WSAStartup(MAKEWORD(2, 2), &wsa);
 	string input_nick;
+
 	if (!code) {
 		//cout << "사용할 닉네임 입력 >>";
 		//cin >> my_nick;
@@ -151,10 +158,22 @@ int main() {
 		//client_addr.sin_addr.s_addr = htonl(INADDR_ANY);
 
 		while (1) {
+
+			con->setSchema("chatprogram");
+			pstmt = con->prepareStatement("SELECT nick_name FROM information WHERE id = ?;");
+			pstmt->setString(1, input_id);
+			result = pstmt->executeQuery();
+
+			while (result->next()) {
+				input_nick = result->getString("nick_name");
+			}
+
+			cout << "닉네임은" << input_nick << "입니다." << endl;
+
 			if (!connect(client_sock, (SOCKADDR*)&client_addr, sizeof(client_addr))) {
 				//connect()는 정상연결 되었을 때 0 반환
 				cout << "Server Connect" << endl;
-				send(client_sock, my_nick.c_str(), my_nick.length(), 0);
+				send(client_sock, input_nick.c_str(), input_nick.length(), 0);
 				break;
 				//닉네임을 서버로 보내주기
 			}
@@ -170,8 +189,14 @@ int main() {
 		}
 		th2.join();
 		closesocket(client_sock); //리소스 반환 
-	}
 
+	}
 	WSACleanup();
+
+	delete result;
+	delete pstmt;
+	delete con;
+	system("pause");
+
 	return 0;
 }
