@@ -173,9 +173,15 @@ void information_insert(string nick_name, string name, string id, string pw){
         system("pause");
         exit(1);
     }
+
+    con->setSchema("chatprogram");
+    stmt = con->createStatement();
+    stmt->execute("set names euckr"); // 한글 인코딩을 위함
+    if (stmt) { delete stmt; stmt = nullptr; }
   //information insert
+
     cout << "insert_ready" << endl;
-  //  pstmt = con->prepareStatement("INSERT INTO information(nick_name,name,id,pw) VALUES(?,?,?,?)");
+    pstmt = con->prepareStatement("INSERT INTO information(nick_name,name,id,pw) VALUES(?,?,?,?)");
     pstmt->setString(1, nick_name); //닉네임 (중복 불가)
     pstmt->setString(2, name); //이름
     pstmt->setString(3, id); //id (중복 불가)
