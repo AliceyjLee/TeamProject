@@ -57,64 +57,76 @@ int chat_recv() {
 }
 
 int main() {
-	WSADATA wsa;
-	int code = WSAStartup(MAKEWORD(2, 2), &wsa);
-
-
+	
 	//로그인 
 
-	string input_id, input_pw;
+	try
+	{
+		driver = get_driver_instance();
+		//for demonstration only. never save password in the code!
+		con = driver->connect(server, username, password);
+	}
+	catch (sql::SQLException e)
+	{
+		cout << "Could not connect to server. Error message: " << e.what() << endl;
+		system("pause");
+		exit(1);
+	}
+	con->setSchema("chatprogram");
 
-	while (true) {
+	string find_id, find_pw;
+	string input_id, input_pw;
+	bool check_id = 1, check_pw = 1;
+
+	while (check_id == 1 || check_pw == 1) {
+
+		check_id = 1, check_pw = 1;
 
 		cout << "아이디를 입력하세요 -> \n";
 		cin >> input_id;
 		cout << "비밀번호를 입력하세요 -> \n";
 		cin >> input_pw;
 
-		try
-		{
-			driver = get_driver_instance();
-			//for demonstration only. never save password in the code!
-			con = driver->connect(server, username, password);
-		}
-		catch (sql::SQLException e)
-		{
-			cout << "Could not connect to server. Error message: " << e.what() << endl;
-			system("pause");
-			exit(1);
-		}
+		// ID 확인 -> check_id == 0;
 		con->setSchema("chatprogram");
-
-		//select  
-		pstmt = con->prepareStatement("SELECT * FROM information;");
+		pstmt = con->prepareStatement("SELECT id FROM information;");
 		result = pstmt->executeQuery();
 
-		string find_id, find_pw;
-		bool temp;
-
 		while (result->next()) {
-
 			find_id = result->getString("id");
-			find_pw = result->getString("pw");
-			
-
 			if (find_id == input_id) {
-				cout << "로그인 성공! \n";		
-				break;
-			}
-			else {
-				cout << "정보가 없거나 잘못된 회원정보를 입력하셨습니다. \n";
-				cout << "다시 시도하세요. \n";
+				check_id = 0;
 			}
 		}
+		cout << check_id << endl;
+		
+		// PW 확인 -> check_pw == 0;
+		con->setSchema("chatprogram");
+		pstmt = con->prepareStatement("SELECT pw FROM information;");
+		result = pstmt->executeQuery();
+
+		while (result->next()) {
+			find_pw = result->getString("pw");
+			if (find_pw == input_pw) {
+				check_pw = 0;
+			}
+		}
+		cout << check_pw << endl;
+		
+		if (check_id == 1) {
+			cout << "잘못된 ID입니다." << endl << "다시 입력하세요" << endl;
+		}
+		if (check_pw == 1) {
+			cout << "잘못된 PW입니다." << endl << "다시 입력하세요" << endl;
+		}
+		
 	}
 
-	delete result;
-	delete pstmt;
-	delete con;
-	system("pause");
-
+	
+	//con->setSchema("chatprogram");
+	WSADATA wsa;
+	int code = WSAStartup(MAKEWORD(2, 2), &wsa);
+	string input_nick;
 
 	if (!code) {
 		//cout << "사용할 닉네임 입력 >>";
@@ -128,10 +140,22 @@ int main() {
 		//client_addr.sin_addr.s_addr = htonl(INADDR_ANY);
 
 		while (1) {
+
+			con->setSchema("chatprogram");
+			pstmt = con->prepareStatement("SELECT nick_name FROM information WHERE id = ?;");
+			pstmt->setString(1, input_id);
+			result = pstmt->executeQuery();
+
+			while (result->next()) {
+				input_nick = result->getString("nick_name");
+			}
+
+			cout << "닉네임은" << input_nick << "입니다." << endl;
+
 			if (!connect(client_sock, (SOCKADDR*)&client_addr, sizeof(client_addr))) {
 				//connect()는 정상연결 되었을 때 0 반환
 				cout << "Server Connect" << endl;
-				send(client_sock, my_nick.c_str(), my_nick.length(), 0);
+				send(client_sock, input_nick.c_str(), input_nick.length(), 0);
 				break;
 				//닉네임을 서버로 보내주기
 			}
@@ -147,8 +171,15 @@ int main() {
 		}
 		th2.join();
 		closesocket(client_sock); //리소스 반환 
+	
 	}
-
 	WSACleanup();
+
+	delete result;
+	delete pstmt;
+	delete con;
+	system("pause");
+
 	return 0;
+	
 }
