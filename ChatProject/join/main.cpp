@@ -169,7 +169,6 @@ void information_insert(string nick_name, string name, string id, string pw){
         system("pause");
         exit(1);
     }
-
     con->setSchema("chatprogram");
     stmt = con->createStatement();
     stmt->execute("set names euckr"); // 한글 인코딩을 위함
