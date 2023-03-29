@@ -31,6 +31,23 @@ const string password = "1234"; // 데이터베이스 접속 비밀번호
 
 
 int chat_recv() {
+
+	string find_user, find_msg;
+
+	cout << "sever의 기록을 출력합니다" << endl;
+	con->setSchema("chatprogram");
+	pstmt = con->prepareStatement("SELECT id FROM information;");
+	result = pstmt->executeQuery();
+
+	while (result->next()) {
+		find_user = result->getString("user_nick_name");
+		find_msg = result->getString("user_message");
+		cout << find_user << " : " << find_msg << endl;
+	}
+	///////////////// 이전기록 출력 ////////////////////////////////////
+
+
+
 	char buf[MAX_SIZE] = {}; //메시지 입력, 출력 위함
 	string msg;
 	while (1) {
@@ -92,6 +109,8 @@ int main() {
 
 	}
 	//select  
+
+
 
 
 
