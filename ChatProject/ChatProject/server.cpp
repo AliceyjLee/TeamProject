@@ -9,6 +9,7 @@
 #include <cppconn/driver.h> 
 #include <cppconn/exception.h> 
 #include <cppconn/prepared_statement.h> 
+#include <cppconn/statement.h>
 
 #define MAX_SIZE 1024 
 #define MAX_CLIENT 3
@@ -54,6 +55,9 @@ int main() {
 		system("pause");
 		exit(1);
 	}
+
+	
+
 
 	WSADATA wsa;
 	int code = WSAStartup(MAKEWORD(2, 2), &wsa);
@@ -147,6 +151,11 @@ void send_msg(const char* msg) {
 }
 
 void recv_msg(int idx) {
+	con->setSchema("chatprogram");
+	stmt = con->createStatement();
+	stmt->execute("set names euckr"); // 한글 인코딩을 위함
+	if (stmt) { delete stmt; stmt = nullptr; }
+
 	char buf[MAX_SIZE] = {};
 	string msg = "";
 	while (1) {

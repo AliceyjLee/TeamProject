@@ -5,6 +5,18 @@
 #include <sstream>
 #include <thread>
 #include <WS2tcpip.h>
+#include <stdlib.h> 
+#include "mysql_connection.h" 
+#include <cppconn/driver.h> 
+#include <cppconn/exception.h> 
+#include <cppconn/prepared_statement.h> 
+
+sql::Driver* driver;
+sql::Connection* con;
+sql::Statement* stmt;
+sql::PreparedStatement* pstmt;
+sql::ResultSet* result;
+
 #define MAX_SIZE 1024
 using std::cout;
 using std::cin;
@@ -13,7 +25,32 @@ using std::string;
 SOCKET client_sock;
 string my_nick;
 
+const string server = "tcp://127.0.0.1:3306"; // 데이터베이스 주소
+const string username = "project"; // 데이터베이스 사용자
+const string password = "1234"; // 데이터베이스 접속 비밀번호
+
 int chat_recv() {
+
+
+	string find_user, find_msg;
+
+	cout << "sever의 기록을 출력합니다" << endl;
+	con->setSchema("chatprogram");
+	pstmt = con->prepareStatement("SELECT id FROM information;");
+	result = pstmt->executeQuery();
+
+	while (result->next()) {
+		find_user = result->getString("user_nick_name");
+		find_msg = result->getString("user_message");
+		cout << find_user << " : " << find_msg << endl;
+	}
+
+	//////////////////////////////////////////////////////////////
+
+
+
+
+
 	char buf[MAX_SIZE] = {}; //메시지 입력, 출력 위함
 	string msg;
 	while (1) {

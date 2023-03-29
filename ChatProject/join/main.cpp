@@ -1,26 +1,32 @@
 #pragma comment(lib, "ws2_32.lib")
+#include <iostream>
+#include <string>
+#include <vector>
+#include <thread>
 #include <WinSock2.h>
 #include <stdlib.h> 
-#include <iostream> 
 #include "mysql_connection.h" 
 #include <cppconn/driver.h> 
 #include <cppconn/exception.h> 
 #include <cppconn/prepared_statement.h> 
+#include <cppconn/statement.h>
 
+#define MAX_SIZE 1024 
+#define MAX_CLIENT 3
 using std::cout;
 using std::cin;
 using std::endl;
 using std::string;
 
-const string server = "tcp://127.0.0.1:3306"; // 데이터베이스 주소 
-const string username = "project"; // 데이터베이스 사용자 
-const string password = "1234"; // 데이터베이스 접속 비밀번호 
-
-sql::Driver* driver; 
+sql::Driver* driver;
 sql::Connection* con;
 sql::Statement* stmt;
 sql::PreparedStatement* pstmt;
 sql::ResultSet* result;
+
+const string server = "tcp://127.0.0.1:3306"; // 데이터베이스 주소 
+const string username = "project"; // 데이터베이스 사용자 
+const string password = "1234"; // 데이터베이스 접속 비밀번호 
 
 void create_table();
 void information_insert(string nick_name, string name, string id, string pw);
@@ -37,13 +43,17 @@ int main()
         cout << "Could not connect to server. Error message: " << e.what() << endl;
         system("pause");
         exit(1);
-    }
-    
-    create_table();
+    } 
+
+    con->setSchema("chatprogram");
+    stmt = con->createStatement();
+    stmt->execute("set names euckr"); // 한글 인코딩을 위함
+    if (stmt) { delete stmt; stmt = nullptr; }
+
+    create_table(); 
     string nick_name,name,id,pw;
     string find_id, find_nick;
 
-    
     /////////////////////////////////////////////////회원가입///////////////////////////////////////////////////////
 
     //이름 입력
@@ -81,9 +91,9 @@ int main()
 
         while (result->next()) {
             find_id = result->getString("nick_name");
-            if (find_id == id) { break; }
+            if (find_id == nick_name) { break; }
         }
-        if (find_id == id) {
+        if (find_id == nick_name) {
             cout << "닉네임이 중복되었습니다." << endl << "다시 입력하세요" << endl;
             continue;
         }
@@ -102,11 +112,11 @@ int main()
     //최종적으로 nick_name, name,id,pw를 information 데이터 베이스에 추가하기 
     information_insert(nick_name, name, id, pw);
     
-
     //반납
-    
+    delete stmt;
     delete pstmt;
     delete con;
+    delete result;
     system("pause");
     return 0;
 }
@@ -118,10 +128,10 @@ void create_table() {
     stmt = con->createStatement(); 
     stmt->execute("DROP TABLE IF EXISTS information");
     cout << "Finished dropping table (if existed)" << endl;
-    stmt->execute("CREATE TABLE information (nick_name VARCHAR(20) PRIMARY KEY, name VARCHAR(20), id VARCHAR(20), pw VARCHAR(20));");
+    stmt->execute("CREATE TABLE information (nick_name VARCHAR(20) PRIMARY KEY NOT NULL, name VARCHAR(20) NOT NULL, id VARCHAR(20) NOT NULL, pw VARCHAR(20) NOT NULL);");
     cout << "Finished creating table" << endl;
-
-
+       
+    ///////////information Table 디폴트값 추가////////////
     pstmt = con->prepareStatement("INSERT INTO information (nick_name, name, id, pw) VALUES(?,?,?,?)");
     pstmt->setString(1,"Adam"); //닉네임 (중복 불가)
     pstmt->setString(2,"김민지"); //이름
@@ -130,31 +140,27 @@ void create_table() {
     pstmt->execute();
     cout << "1번 생성!" << endl;
 
-   // pstmt = con->prepareStatement("INSERT INTO information (nick_name,name,id,pw) VALUES(?,?,?,?)");
     pstmt->setString(1, "Alice"); //닉네임 (중복 불가)
     pstmt->setString(2, "이윤정"); //이름
     pstmt->setString(3, "lee123"); //id (중복 불가)
     pstmt->setString(4, "4321"); // pw
     pstmt->execute();
+    cout << "2번 생성!" << endl;
 
-   // pstmt = con->prepareStatement("INSERT INTO information (nick_name,name,id,pw) VALUES(?,?,?,?)");
     pstmt->setString(1, "Bunny"); //닉네임 (중복 불가)
     pstmt->setString(2, "송혜교"); //이름
     pstmt->setString(3, "song77"); //id (중복 불가)
     pstmt->setString(4, "6839"); // pw
     pstmt->execute();
+    cout << "3번 생성!" << endl;
 
-   // pstmt = con->prepareStatement("INSERT INTO information(nick_name,name,id,pw) VALUES(?,?,?,?)");
     pstmt->setString(1, "Amy"); //닉네임 (중복 불가)
     pstmt->setString(2, "박연진"); //이름
     pstmt->setString(3, "park44"); //id (중복 불가)
     pstmt->setString(4, "4444"); // pw
     pstmt->execute();
-    cout << "One row inserted." << endl;
-
-    delete stmt;
+    cout << "4번 생성!" << endl;
 }
-
 void information_insert(string nick_name, string name, string id, string pw){
     try
     {
@@ -167,14 +173,13 @@ void information_insert(string nick_name, string name, string id, string pw){
         system("pause");
         exit(1);
     }
-
   //information insert
     cout << "insert_ready" << endl;
   //  pstmt = con->prepareStatement("INSERT INTO information(nick_name,name,id,pw) VALUES(?,?,?,?)");
-    pstmt->setString(1, string(nick_name)); //닉네임 (중복 불가)
-    pstmt->setString(2, string(name)); //이름
-    pstmt->setString(3, string(id)); //id (중복 불가)
-    pstmt->setString(4, string(pw)); // pw
+    pstmt->setString(1, nick_name); //닉네임 (중복 불가)
+    pstmt->setString(2, name); //이름
+    pstmt->setString(3, id); //id (중복 불가)
+    pstmt->setString(4, pw); // pw
     pstmt->execute();
     cout << "One row inserted." << endl;
 }
