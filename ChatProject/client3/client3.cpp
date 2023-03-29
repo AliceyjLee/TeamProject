@@ -29,22 +29,7 @@ const string server = "tcp://127.0.0.1:3306"; // 데이터베이스 주소
 const string username = "project"; // 데이터베이스 사용자
 const string password = "1234"; // 데이터베이스 접속 비밀번호
 int chat_recv() {
-	con->setSchema("chatprogram");
 
-
-	string find_user, find_msg;
-
-	
-	cout << "server의 기록을 출력합니다" << endl;
-	
-	pstmt = con->prepareStatement("SELECT user_nick_name,user_message FROM message;");
-	result = pstmt->executeQuery();
-
-	while (result->next()) {
-		find_user = result->getString("user_nick_name");
-		find_msg = result->getString("user_message");
-		cout << find_user << " : " << find_msg << endl;
-	}
 	
 	//////////////////////////////////////////////////////////////
 
@@ -73,6 +58,24 @@ int chat_recv() {
 	}
 }
 int main() {
+
+
+	con->setSchema("chatprogram");
+	string find_user, find_msg;
+
+
+	cout << "server의 기록을 출력합니다" << endl;
+
+	pstmt = con->prepareStatement("SELECT user_nick_name,user_message FROM message;");
+	result = pstmt->executeQuery();
+
+	while (result->next()) {
+		find_user = result->getString("user_nick_name");
+		find_msg = result->getString("user_message");
+		cout << find_user << " : " << find_msg << endl;
+	}
+
+
 	WSADATA wsa;
 	int code = WSAStartup(MAKEWORD(2, 2), &wsa);
 	if (!code) {

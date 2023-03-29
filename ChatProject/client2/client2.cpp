@@ -32,20 +32,6 @@ const string password = "1234"; // 데이터베이스 접속 비밀번호
 
 int chat_recv() {
 
-	string find_user, find_msg;
-
-	cout << "sever의 기록을 출력합니다" << endl;
-	con->setSchema("chatprogram");
-	pstmt = con->prepareStatement("SELECT id FROM information;");
-	result = pstmt->executeQuery();
-
-	while (result->next()) {
-		find_user = result->getString("user_nick_name");
-		find_msg = result->getString("user_message");
-		cout << find_user << " : " << find_msg << endl;
-	}
-	///////////////// 이전기록 출력 ////////////////////////////////////
-
 
 
 	char buf[MAX_SIZE] = {}; //메시지 입력, 출력 위함
@@ -69,7 +55,7 @@ int chat_recv() {
 	}
 }
 int main() {
-	try
+	try  
 	{
 		driver = get_driver_instance();
 		//for demonstration only. never save password in the code!
@@ -81,73 +67,32 @@ int main() {
 		system("pause");
 		exit(1);
 	}
+	///////////////// 이전기록 출력////////////////////////////////////
+	string find_user, find_msg;
 
+	cout << "server의 기록을 출력합니다" << endl;
+	con->setSchema("chatprogram");
+	pstmt = con->prepareStatement("SELECT user_nick_name,user_message FROM message;");
+	result = pstmt->executeQuery();
+
+	while (result->next()) {
+		find_user = result->getString("user_nick_name");
+		find_msg = result->getString("user_message");
+		cout << find_user << " : " << find_msg << endl;
+	}
+	cout << "------------------------------------------" << endl;
+	///////////////// 로그인 ////////////////////////////////////
 	string find_id, find_pw;
 	string  input_id, input_pw;
 	bool check_id = 0, check_pw = 0;
 
-	con->setSchema("chatprogram");
-	////////////////////////////////////////////////////////////////////////로그인 
-	//////// 아이디 , 비번 순서대로 입력하고 둘중 하나가 틀렸을 경우 (아이디/비번)중 뭐가 틀렸는지 출력해주고 다시 입력받기 
-	while (true) {
-
-
-		while (check_id==0 && check_pw==0){ //id, pw 맞게 입력할 때 까지 무한루프 (중간에 join창에서 회원가입 하고 올 수 있음)
-			cout << "아이디를 입력하세요 -> \n";
-			cin >> input_id;
-			cout << "비밀번호를 입력하세요 -> \n";
-			cin >> input_pw;
-			//id, pw 검사 
-			while (1) {  //id
-				con->setSchema("chatprogram");
-				pstmt = con->prepareStatement("SELECT id FROM information;");
-				result = pstmt->executeQuery();
-
-				while (result->next()) {
-					find_id = result->getString("id");
-					if (find_id == id) { check_id==1 }
-				}
-
-				while (1) {
-					con->setSchema("chatprogram");
-					pstmt = con->prepareStatement("SELECT id FROM information;");
-					result = pstmt->executeQuery();
-
-					while (result->next()) {
-						find_id = result->getString("id");
-						if (find_id == id) { check_pw==1; }
-					}
-
-
-
-
-
-
-
-
-			}
-
-
-
-
-
-			cout << "oo을 잘못 입력하셨습니다. \n";
-			cout << "다시 시도하세요. \n";
-		}
-			cout << "로그인 성공! \n";
-			break;
-
-	}
-	//select  
-
-
-
-
-
 
 	////////////////////////////////////////////////////소켓통신  (여기서 메세지 가져와야할듯)
+
+	con->setSchema("chatprogram");
 	WSADATA wsa;
 	int code = WSAStartup(MAKEWORD(2, 2), &wsa);
+	string input_nick;
 	if (!code) {
 		//cout << "사용할 닉네임 입력 >>";
 		//cin >> my_nick;
