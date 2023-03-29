@@ -10,14 +10,12 @@
 #include <cppconn/exception.h> 
 #include <cppconn/prepared_statement.h> 
 
-
 #define MAX_SIZE 1024 
 #define MAX_CLIENT 3
 using std::cout;
 using std::cin;
 using std::endl;
 using std::string;
-
 
 const string server = "tcp://127.0.0.1:3306"; // 데이터베이스 주소 
 const string username = "project"; // 데이터베이스 사용자 
@@ -28,7 +26,6 @@ sql::Connection* con;
 sql::Statement* stmt;
 sql::PreparedStatement* pstmt;
 sql::ResultSet* result;
-
 
 struct SOCKET_INFO {
 	SOCKET sck;
@@ -46,7 +43,6 @@ void del_client(int idx); // 5. 소켓 닫아줌
 void create_table();
 
 int main() {
-
 	try
 	{
 		driver = get_driver_instance();
@@ -159,18 +155,13 @@ void recv_msg(int idx) {
 			msg = sck_list[idx].user + " : " + buf;
 			cout << msg << endl;
 
-			//pstmt = con->prepareStatement("INSERT INTO message(user_nick_name, user_message) VALUES('" sck_list[idx].user +"',"' buf + '")");
-			//('" + sender + "', '" + recipient + "', '" + message_text + "', NOW())";'
+			////////////////////////////////메세지 저장부분 client로 옮기기
 			pstmt = con->prepareStatement("INSERT INTO message(user_nick_name, user_message) VALUES(?,?)");
 			pstmt->setString(1, sck_list[idx].user);
 			pstmt->setString(2, string(buf));
 			pstmt->execute();
 			cout << "One row inserted." << endl;
 
-
-
-			//cout <<"test" << buf << endl;   ////////여기 수정 !!
-			//cout << "test" << sck_list[idx].user << endl;   ////////여기 수정 !!
 
 			send_msg(msg.c_str());
 		}
@@ -209,6 +200,4 @@ void create_table() {
 	cout << "Finished dropping table (if existed)" << endl;
 	stmt->execute("CREATE TABLE message (user_index serial PRIMARY KEY, user_nick_name VARCHAR(50), user_message VARCHAR(100));");
 	cout << "Finished creating table" << endl;
-
-
 }
