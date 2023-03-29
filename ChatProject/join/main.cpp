@@ -30,6 +30,8 @@ const string password = "1234"; // 데이터베이스 접속 비밀번호
 
 void create_table();
 void information_insert(string nick_name, string name, string id, string pw);
+void korean();
+void duplicate(string input, string creat_input, string find_id, string query);
 
 int main()
 {
@@ -54,64 +56,21 @@ int main()
     string nick_name,name,id,pw;
     string find_id, find_nick;
 
-    /////////////////////////////////////////////////회원가입///////////////////////////////////////////////////////
-
+    /////////////////////////////////////////////////회원가입////////////////////////////////////////////////////
     //이름 입력
     cout << "이름을 입력해주세요 : ";
     cin >> name;
-
     //아이디 중복 검사
-    while (1){
-        cout << "생성할 id를 입력하세요 : " << endl;
-        cin >> id;
-
-        con->setSchema("chatprogram");
-        pstmt = con->prepareStatement("SELECT id FROM information;");
-        result = pstmt->executeQuery();
-
-        while (result->next()) {
-            find_id = result->getString("id");
-            if (find_id == id) { break; }
-        }
-        if (find_id == id) {
-            cout << "ID가 중복되었습니다." << endl << "다시 입력하세요" << endl;
-            continue;
-        }
-        break;
-    }
-
+    duplicate("id", id, find_id, "SELECT id FROM information;");
     //닉네임 중복 검사
-    while (1) {
-        cout << "생성할 닉네임을 입력하세요 : " << endl;
-        cin >> nick_name;
-
-        con->setSchema("chatprogram");
-        pstmt = con->prepareStatement("SELECT nick_name FROM information;");
-        result = pstmt->executeQuery();
-
-        while (result->next()) {
-            find_id = result->getString("nick_name");
-            if (find_id == nick_name) { break; }
-        }
-        if (find_id == nick_name) {
-            cout << "닉네임이 중복되었습니다." << endl << "다시 입력하세요" << endl;
-            continue;
-        }
-        break;
-    }
+    duplicate("nick_name", nick_name, find_nick, "SELECT nick_name FROM information;");
     //비밀번호 입력 
     cout << "비밀번호를 입력해주세요 : ";
     cin >> pw;
-
-    cout << "출력!" << endl;
-    cout << nick_name << endl;
-    cout << name << endl;
-    cout << id << endl;
-    cout << pw << endl;
-
     //최종적으로 nick_name, name,id,pw를 information 데이터 베이스에 추가하기 
     information_insert(nick_name, name, id, pw);
     
+
     //반납
     delete stmt;
     delete pstmt;
@@ -121,6 +80,12 @@ int main()
     return 0;
 }
 
+void korean() {
+    con->setSchema("chatprogram");
+    stmt = con->createStatement();
+    stmt->execute("set names euckr"); // 한글 인코딩을 위함
+    if (stmt) { delete stmt; stmt = nullptr; }
+}
 void create_table() {
 
     con->setSchema("chatprogram");
@@ -169,10 +134,7 @@ void information_insert(string nick_name, string name, string id, string pw){
         system("pause");
         exit(1);
     }
-    con->setSchema("chatprogram");
-    stmt = con->createStatement();
-    stmt->execute("set names euckr"); // 한글 인코딩을 위함
-    if (stmt) { delete stmt; stmt = nullptr; }
+    korean();
 
   //information insert
     pstmt = con->prepareStatement("INSERT INTO information(nick_name,name,id,pw) VALUES(?,?,?,?)");
@@ -182,4 +144,25 @@ void information_insert(string nick_name, string name, string id, string pw){
     pstmt->setString(4, pw); // pw
     pstmt->execute();
     cout << "One row inserted." << endl;
+}
+
+void duplicate(string input, string creat_input,string find_id, string query) {
+    while (1) {
+        cout << "생성할" << input << ((input == "id") ? "를" : "을") << " 입력하세요 : " << endl;
+        cin >> creat_input;
+
+        con->setSchema("chatprogram");
+        pstmt = con->prepareStatement(query);
+        result = pstmt->executeQuery();
+
+        while (result->next()) {
+            find_id = result->getString(input);
+            if (find_id == creat_input) { break; }
+        }
+        if (find_id == creat_input) {
+            cout << input <<"가 중복되었습니다." << endl << "다시 입력하세요" << endl;
+            continue;
+        }
+        break;
+    }
 }
