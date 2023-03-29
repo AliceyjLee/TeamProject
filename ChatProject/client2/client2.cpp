@@ -92,12 +92,42 @@ int main() {
 	while (true) {
 
 
-		while (1){ //id, pw 맞게 입력할 때 까지 무한루프 (중간에 join창에서 회원가입 하고 올 수 있음)
+		while (check_id==0 && check_pw==0){ //id, pw 맞게 입력할 때 까지 무한루프 (중간에 join창에서 회원가입 하고 올 수 있음)
 			cout << "아이디를 입력하세요 -> \n";
 			cin >> input_id;
 			cout << "비밀번호를 입력하세요 -> \n";
 			cin >> input_pw;
 			//id, pw 검사 
+			while (1) {  //id
+				con->setSchema("chatprogram");
+				pstmt = con->prepareStatement("SELECT id FROM information;");
+				result = pstmt->executeQuery();
+
+				while (result->next()) {
+					find_id = result->getString("id");
+					if (find_id == id) { check_id==1 }
+				}
+
+				while (1) {
+					con->setSchema("chatprogram");
+					pstmt = con->prepareStatement("SELECT id FROM information;");
+					result = pstmt->executeQuery();
+
+					while (result->next()) {
+						find_id = result->getString("id");
+						if (find_id == id) { check_pw==1; }
+					}
+
+
+
+
+
+
+
+
+			}
+
+
 
 
 
