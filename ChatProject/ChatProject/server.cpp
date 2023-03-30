@@ -42,6 +42,7 @@ void send_msg(const char* msg); //3. 클라이언트에게 msg 보내기
 void recv_msg(int idx); // 4. 클라이언트에게 채팅 내용을 받음
 void del_client(int idx); // 5. 소켓 닫아줌
 void create_table();
+void korean();
 
 int main() {
 	try
@@ -61,7 +62,7 @@ int main() {
 
 	WSADATA wsa;
 	int code = WSAStartup(MAKEWORD(2, 2), &wsa);
-	create_table();  //메시지_테이블 생성하고 시작하기 ////////////////////////여기 수정 
+	create_table();  //메시지_테이블 생성하고 시작하기//////////////////////////////////////
 
 	if (!code) {
 		server_init();
@@ -138,9 +139,7 @@ void add_client() {
 
 	cout << "[공지] 현재 접속자 수 : " << client_count << "명" << endl;
 	send_msg(msg.c_str());
-
 	th.join();
-
 }
 
 
@@ -150,30 +149,29 @@ void send_msg(const char* msg) {
 	}
 }
 
-void recv_msg(int idx) {
-	con->setSchema("chatprogram");
-	stmt = con->createStatement();
-	stmt->execute("set names euckr"); // 한글 인코딩을 위함
-	if (stmt) { delete stmt; stmt = nullptr; }
+void recv_msg(int idx) {	
+	korean();
 
 	char buf[MAX_SIZE] = {};
 	string msg = "";
+	bool not_in=0;
 	while (1) {
 		ZeroMemory(&buf, MAX_SIZE);
 		if (recv(sck_list[idx].sck, buf, MAX_SIZE, 0) > 0) {
+
+			//////////////////////if 문으로 버퍼에 "종료"가 담겨있을 경우 공지 띄우고 del_client
+			if (buf == "회원탈퇴로 인한 종료") { del_client(idx); }
+
 			msg = sck_list[idx].user + " : " + buf;
 			cout << msg << endl;
-
-			////////////////////////////////메세지 저장부분 client로 옮기기
 			pstmt = con->prepareStatement("INSERT INTO message(user_nick_name, user_message) VALUES(?,?)");
 			pstmt->setString(1, sck_list[idx].user);
 			pstmt->setString(2, string(buf));
 			pstmt->execute();
-			cout << "One row inserted." << endl;
 
-
-			send_msg(msg.c_str());
+			send_msg(msg.c_str());			
 		}
+
 		else {
 			msg = "[공지]" + sck_list[idx].user + "님이 퇴장했습니다.";
 			cout << msg << endl;
@@ -186,6 +184,7 @@ void recv_msg(int idx) {
 void del_client(int idx) {
 	closesocket(sck_list[idx].sck);
 	client_count--;
+	cout << "[공지] 현재 접속자 수 : " << client_count << "명" << endl;
 }
 
 void create_table() {
@@ -209,4 +208,10 @@ void create_table() {
 	cout << "Finished dropping table (if existed)" << endl;
 	stmt->execute("CREATE TABLE message (user_index serial PRIMARY KEY, user_nick_name VARCHAR(50), user_message VARCHAR(100));");
 	cout << "Finished creating table" << endl;
+}
+void korean() {
+	con->setSchema("chatprogram");
+	stmt = con->createStatement();
+	stmt->execute("set names euckr"); // 한글 인코딩을 위함
+	if (stmt) { delete stmt; stmt = nullptr; }
 }

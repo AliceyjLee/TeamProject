@@ -6,6 +6,7 @@
 #include <thread>
 #include <WS2tcpip.h>
 #include <stdlib.h> 
+#include <Windows.h> 
 #include "mysql_connection.h" 
 #include <cppconn/driver.h> 
 #include <cppconn/exception.h> 
@@ -32,7 +33,7 @@ const string password = "1234"; // 데이터베이스 접속 비밀번호
 
 void korean();
 void recv_prev_msg();
-void duplicate_login(string input, string query, bool check, string *create_input);
+void duplicate_login(string input, string query, bool check, string* create_input);
 
 
 int chat_recv() {
@@ -75,9 +76,9 @@ int main() {
 	korean(); // 한국어 인코딩
 
 	///////////////// 이전기록 출력////////////////////////////////////
-	
+
 	recv_prev_msg();
-	
+
 	///////////////// 로그인 ////////////////////////////////////
 
 	con->setSchema("chatprogram");
@@ -85,18 +86,18 @@ int main() {
 	string input_id, input_pw;
 	bool check_id = 1, check_pw = 1;
 
-	duplicate_login("id", "SELECT id FROM information;", check_id,&input_id); // 로그인-아이디
-	duplicate_login("pw", "SELECT pw FROM information;", check_pw,&input_pw); // 로그인-비번
+	duplicate_login("id", "SELECT id FROM information;", check_id, &input_id); // 로그인-아이디
+	duplicate_login("pw", "SELECT pw FROM information;", check_pw, &input_pw); // 로그인-비번
 
 	////////////////////////////////////////////////////소켓통신  
-	
+
 	//con->setSchema("chatprogram");
 	WSADATA wsa;
 	int code = WSAStartup(MAKEWORD(2, 2), &wsa);
 	string input_nick;
 
 	if (!code) {
-	
+
 		client_sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
 
 		SOCKADDR_IN client_addr = {};
@@ -106,7 +107,6 @@ int main() {
 		//client_addr.sin_addr.s_addr = htonl(INADDR_ANY);
 
 		while (1) {
-
 			con->setSchema("chatprogram");
 			pstmt = con->prepareStatement("SELECT nick_name FROM information WHERE id = ?;");
 			pstmt->setString(1, input_id);
@@ -116,31 +116,61 @@ int main() {
 				input_nick = result->getString("nick_name");
 			}
 
-			cout << "닉네임은" << input_nick << "입니다." << endl;
 
 			if (!connect(client_sock, (SOCKADDR*)&client_addr, sizeof(client_addr))) {
-				//connect()는 정상연결 되었을 때 0 반환
-				cout << "Server Connect" << endl;
+				SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 10);   //글자 색 바꿔주는 함수 (빨간색)
+				cout << "닉네임은" << input_nick << "입니다." << endl;
+				cout << input_nick << "님의 채팅 시작" << endl;
+				cout << "-------------------------------------------------" << endl;
+				SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 15);
+				//cout << "Server Connect" << endl;
 				send(client_sock, input_nick.c_str(), input_nick.length(), 0);
+
 				break;
 				//닉네임을 서버로 보내주기
 			}
 			cout << "connecting..." << endl;
 		}
+
 		std::thread th2(chat_recv);
+		string find_nick;
+		bool end_client = 0;  //회원이 탈퇴 했을 경우 
 
 		while (1) { //채팅내용(문자열)받아서 보내주기
-			string text;
-			std::getline(cin, text);
-			const char* buffer = text.c_str();
-			send(client_sock, buffer, strlen(buffer), 0);
+			///////////////채팅창을 켠 상태로 회원 탈퇴했을 경우
+			///회원 찾아서 없으면 server에서 공지띄우고 count -- 하기
+
+			con->setSchema("chatprogram");
+			pstmt = con->prepareStatement("SELECT nick_name FROM information; ");
+			result = pstmt->executeQuery();
+
+			while (result->next()) { //회원가입이 되어있을 경우 else문에서 정상동작 
+				find_nick = result->getString("nick_name");
+				if (find_nick == input_nick) {
+					end_client = 1;
+					break;
+				}
+			}
+
+			if (!end_client) {
+				send(client_sock, "회원탈퇴로 인한 종료", strlen("회원탈퇴로 인한 종료"), 0);
+				cout << "회원 탈퇴 되었습니다" << endl;
+				cout << "더이상 메세지를 전송하실수 없습니다" << endl;
+				exit(1);
+			}
+			else {
+				string text;
+				std::getline(cin, text);
+				const char* buffer = text.c_str();
+				send(client_sock, buffer, strlen(buffer), 0);
+				end_client = 0;
+			}
 		}
 		th2.join();
 		closesocket(client_sock); //리소스 반환 
-
 	}
+	//반납
 	WSACleanup();
-
 	delete result;
 	delete pstmt;
 	delete con;
@@ -148,7 +178,6 @@ int main() {
 
 	return 0;
 }
-
 
 void korean() {
 
@@ -175,7 +204,7 @@ void recv_prev_msg() {
 	cout << "------------------------------------------" << endl;
 }
 
-void duplicate_login(string input, string query, bool check, string *create_input) {
+void duplicate_login(string input, string query, bool check, string* create_input) {
 
 	string find;
 
