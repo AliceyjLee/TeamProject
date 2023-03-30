@@ -32,6 +32,7 @@ void create_table();
 void information_insert(string nick_name, string name, string id, string pw);
 void korean();
 void duplicate(string input, string *creat_input, string *find_id, string query);
+void drop_out_duplicate(string* id, string* find_id);
 
 int main()
 {
@@ -46,30 +47,42 @@ int main()
         system("pause");
         exit(1);
     } 
-
-    con->setSchema("chatprogram");
-    stmt = con->createStatement();
-    stmt->execute("set names euckr"); // 한글 인코딩을 위함
-    if (stmt) { delete stmt; stmt = nullptr; }
-
+    korean();
     create_table(); 
     string nick_name,name,id,pw;
     string find_id, find_nick;
 
-    /////////////////////////////////////////////////회원가입////////////////////////////////////////////////////
-    //이름 입력
-    cout << "이름을 입력해주세요 : ";
-    cin >> name;
-    //아이디 중복 검사
-    duplicate("id", &id, &find_id, "SELECT id FROM information;");
-    //닉네임 중복 검사
-    duplicate("nick_name", &nick_name, &find_nick, "SELECT nick_name FROM information;");
-    //비밀번호 입력 
-    cout << "비밀번호를 입력해주세요 : ";
-    cin >> pw;
-    //최종적으로 nick_name, name,id,pw를 information 데이터 베이스에 추가하기 
-    information_insert(nick_name, name, id, pw);
-    
+    while (1){
+        int sign_inout = 0;
+        cout << "1 : 회원가입" << endl << "2 : 회원 탈퇴" << endl << "번호를 입력하세요" << endl;
+        cin >> sign_inout;
+
+
+        switch (sign_inout)
+        {
+        case 1:////////////////////////회원가입
+            //이름 입력
+            cout << "이름을 입력해주세요 : ";
+            cin >> name;
+            //아이디 중복 검사
+            duplicate("id", &id, &find_id, "SELECT id FROM information;");
+            //닉네임 중복 검사
+            duplicate("nick_name", &nick_name, &find_nick, "SELECT nick_name FROM information;");
+            //비밀번호 입력 
+            cout << "비밀번호를 입력해주세요 : ";
+            cin >> pw;
+            //최종적으로 nick_name, name,id,pw를 information 데이터 베이스에 추가하기 
+            information_insert(nick_name, name, id, pw);
+            break;
+
+        case 2:////////////////////회원 탈퇴//////////////////////////////////////////////////////
+            drop_out_duplicate(&id, &find_id);
+            break;
+        default:
+            cout << "다시 입력하세요" << endl;
+            break;
+        }
+    }
 
     //반납
     delete stmt;
@@ -163,6 +176,34 @@ void duplicate(string input, string *creat_input,string *find_id, string query) 
             cout << input <<"가 중복되었습니다." << endl << "다시 입력하세요" << endl;
             continue;
         }
+        break;
+    }
+}
+void drop_out_duplicate(string *id, string *find_id) {
+    korean();
+    while(1){        
+        cout << "아이디를 입력해주세요 : ";
+        cin >> *id;
+
+        con->setSchema("chatprogram");
+        pstmt = con->prepareStatement("SELECT id FROM information;");
+        result = pstmt->executeQuery();
+
+        while (result->next()) {
+            *find_id = result->getString("id");
+            if (*find_id == *id) { break; }
+            else { *find_id = "NONE"; }
+        }
+
+        if (*find_id != *id) {
+            cout << "ID가 존재하지 않습니다." << endl << "다시 입력하세요" << endl;
+            continue;
+        }
+        //drop
+        pstmt = con->prepareStatement("DELETE FROM information WHERE id = ?");
+        pstmt->setString(1, *id);
+        result = pstmt->executeQuery();
+        cout << *id << "님 회원 탈퇴 되었습니다" << endl;
         break;
     }
 }
