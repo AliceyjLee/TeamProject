@@ -1,9 +1,5 @@
 #pragma comment(lib, "ws2_32.lib")
 #include <iostream>
-#include <string>
-#include <vector>
-#include <thread>
-#include <WinSock2.h>
 #include <stdlib.h> 
 #include "mysql_connection.h" 
 #include <cppconn/driver.h> 
@@ -53,14 +49,14 @@ int main()
     string find_id, find_nick;
 
     while (1){
+        //////////////////////////////다음 동작 입력하기//////////////////////////////////////
         int sign_inout = 0;
         cout << "1 : 회원가입" << endl << "2 : 회원 탈퇴" << endl << "번호를 입력하세요" << endl;
         cin >> sign_inout;
 
-
         switch (sign_inout)
         {
-        case 1:////////////////////////회원가입
+        case 1:////////////////////회원 가입//////////////////////////////////////////////////////
             //이름 입력
             cout << "이름을 입력해주세요 : ";
             cin >> name;
@@ -83,7 +79,6 @@ int main()
             break;
         }
     }
-
     //반납
     delete stmt;
     delete pstmt;
@@ -92,11 +87,10 @@ int main()
     system("pause");
     return 0;
 }
-
-void korean() {
+void korean() {// 한글 인코딩을 위함
     con->setSchema("chatprogram");
     stmt = con->createStatement();
-    stmt->execute("set names euckr"); // 한글 인코딩을 위함
+    stmt->execute("set names euckr"); 
     if (stmt) { delete stmt; stmt = nullptr; }
 }
 void create_table() {
@@ -109,6 +103,7 @@ void create_table() {
     stmt->execute("CREATE TABLE information (nick_name VARCHAR(20) PRIMARY KEY NOT NULL, name VARCHAR(20) NOT NULL, id VARCHAR(20) NOT NULL, pw VARCHAR(20) NOT NULL);");
     cout << "Finished creating table" << endl;
        
+
     ///////////information Table 디폴트값 추가////////////
     pstmt = con->prepareStatement("INSERT INTO information (nick_name, name, id, pw) VALUES(?,?,?,?)");
     pstmt->setString(1,"Adam"); //닉네임 (중복 불가)
@@ -117,22 +112,22 @@ void create_table() {
     pstmt->setString(4,"1234"); // pw
     pstmt->execute();
 
-    pstmt->setString(1, "Alice"); //닉네임 (중복 불가)
-    pstmt->setString(2, "이윤정"); //이름
-    pstmt->setString(3, "lee123"); //id (중복 불가)
-    pstmt->setString(4, "4321"); // pw
+    pstmt->setString(1, "Alice"); 
+    pstmt->setString(2, "이윤정"); 
+    pstmt->setString(3, "lee123"); 
+    pstmt->setString(4, "4321"); 
     pstmt->execute();
 
-    pstmt->setString(1, "Bunny"); //닉네임 (중복 불가)
-    pstmt->setString(2, "송혜교"); //이름
-    pstmt->setString(3, "song77"); //id (중복 불가)
-    pstmt->setString(4, "6839"); // pw
+    pstmt->setString(1, "Bunny"); 
+    pstmt->setString(2, "송혜교"); 
+    pstmt->setString(3, "song77");
+    pstmt->setString(4, "6839");
     pstmt->execute();
 
-    pstmt->setString(1, "Amy"); //닉네임 (중복 불가)
-    pstmt->setString(2, "박연진"); //이름
-    pstmt->setString(3, "park44"); //id (중복 불가)
-    pstmt->setString(4, "4444"); // pw
+    pstmt->setString(1, "Amy"); 
+    pstmt->setString(2, "박연진");
+    pstmt->setString(3, "park44"); 
+    pstmt->setString(4, "4444"); 
     pstmt->execute();
 }
 void information_insert(string nick_name, string name, string id, string pw){
@@ -158,7 +153,6 @@ void information_insert(string nick_name, string name, string id, string pw){
     pstmt->execute();
     cout << "One row inserted." << endl;
 }
-
 void duplicate(string input, string *creat_input,string *find_id, string query) {
     while (1) {
         cout << "생성할" << input << ((input == "id") ? "를" : "을") << " 입력하세요 : " << endl;
@@ -179,7 +173,7 @@ void duplicate(string input, string *creat_input,string *find_id, string query) 
         break;
     }
 }
-void drop_out_duplicate(string *id, string *find_id) {
+void drop_out_duplicate(string *id, string *find_id) { ///////////회원 탈퇴/////////////////
     korean();
     while(1){        
         cout << "아이디를 입력해주세요 : ";

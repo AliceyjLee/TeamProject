@@ -57,15 +57,12 @@ int main() {
 		exit(1);
 	}
 
-	
-
-
 	WSADATA wsa;
 	int code = WSAStartup(MAKEWORD(2, 2), &wsa);
-	create_table();  //메시지_테이블 생성하고 시작하기//////////////////////////////////////
+	create_table();  //메시지_테이블 생성하고 시작하기
 
 	if (!code) {
-		server_init();
+		server_init(); //초기화하고 시작 
 
 		std::thread th1[MAX_CLIENT];
 		for (int i = 0; i < MAX_CLIENT; i++) {
@@ -75,6 +72,7 @@ int main() {
 		while (1) {
 			string text, msg = "";
 			std::getline(cin, text);
+
 			const char* buf = text.c_str();
 
 			msg = server_sock.user + " : " + buf;
@@ -101,11 +99,8 @@ void server_init() {
 	// localhost = 127.0.0.1
 
 	bind(server_sock.sck, (sockaddr*)&server_addr, sizeof(server_addr));
-
-
 	listen(server_sock.sck, SOMAXCONN);
 	server_sock.user = "server";
-
 	cout << "server On!" << endl;
 }
 
@@ -141,7 +136,6 @@ void add_client() {
 	send_msg(msg.c_str());
 	th.join();
 }
-
 
 void send_msg(const char* msg) {
 	for (int i = 0; i < client_count; i++) {
@@ -185,6 +179,10 @@ void del_client(int idx) {
 	closesocket(sck_list[idx].sck);
 	client_count--;
 	cout << "[공지] 현재 접속자 수 : " << client_count << "명" << endl;
+	if (client_count == 0) {
+		cout << "접속자 수가 0명이 되어 프로그램을 종료합니다" << endl;
+		exit(1);
+	}
 }
 
 void create_table() {
