@@ -88,54 +88,6 @@ int main() {
 	duplicate_login("id", "SELECT id FROM information;", check_id,&input_id); // 로그인-아이디
 	duplicate_login("pw", "SELECT pw FROM information;", check_pw,&input_pw); // 로그인-비번
 
-	/*
-	while (check_id == 1) {
-
-		check_id = 1;
-
-		cout << "아이디를 입력하세요 -> \n";
-		cin >> input_id;
-
-		// ID 확인 -> check_id == 0;
-		con->setSchema("chatprogram");
-		pstmt = con->prepareStatement("SELECT id FROM information;");
-		result = pstmt->executeQuery();
-
-		while (result->next()) {
-			find_id = result->getString("id");
-			if (find_id == input_id) {
-				check_id = 0;
-			}
-		}
-		cout << check_id << endl;
-	
-		if (check_id == 1) {cout << "잘못된 ID입니다." << endl << "다시 입력하세요" << endl;}
-	}
-
-	while (check_pw == 1) {
-
-		check_pw = 1;
-
-		cout << "비밀번호를 입력하세요 -> \n";
-		cin >> input_pw;
-
-		// PW 확인 -> check_pw == 0;
-		con->setSchema("chatprogram");
-		pstmt = con->prepareStatement("SELECT pw FROM information;");
-		result = pstmt->executeQuery();
-
-		while (result->next()) {
-			find_pw = result->getString("pw");
-			if (find_pw == input_pw) {
-				check_pw = 0;
-			}
-		}
-		cout << check_pw << endl;
-
-		if (check_pw == 1) { cout << "잘못된 PW입니다." << endl << "다시 입력하세요" << endl; }
-	}
-	*/
-
 	////////////////////////////////////////////////////소켓통신  
 	
 	//con->setSchema("chatprogram");
@@ -144,8 +96,7 @@ int main() {
 	string input_nick;
 
 	if (!code) {
-		//cout << "사용할 닉네임 입력 >>";
-		//cin >> my_nick;
+	
 		client_sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
 
 		SOCKADDR_IN client_addr = {};
@@ -241,7 +192,6 @@ void duplicate_login(string input, string query, bool check, string *create_inpu
 		result = pstmt->executeQuery();
 
 		while (result->next()) {
-			cout << "확인";
 			find = result->getString(input);
 			if (find == *create_input) {
 				check = 0;
