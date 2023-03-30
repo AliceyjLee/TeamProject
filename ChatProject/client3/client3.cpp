@@ -75,23 +75,20 @@ int main() {
 	}
 	korean(); // 한국어 인코딩
 
-	///////////////// 이전기록 출력////////////////////////////////////
-
-	recv_prev_msg();
+	recv_prev_msg();// 이전기록 출력
 
 	///////////////// 로그인 ////////////////////////////////////
-
 	con->setSchema("chatprogram");
 
 	string input_id, input_pw;
 	bool check_id = 1, check_pw = 1;
 
-	duplicate_login("id", "SELECT id FROM information;", check_id, &input_id); // 로그인-아이디
-	duplicate_login("pw", "SELECT pw FROM information;", check_pw, &input_pw); // 로그인-비번
+	duplicate_login("id", "SELECT id FROM information;", check_id, &input_id); // 로그인-아이디 (일치 검사)
+	duplicate_login("pw", "SELECT pw FROM information;", check_pw, &input_pw); // 로그인-비번  (일치 검사)
+
+
 
 	////////////////////////////////////////////////////소켓통신  
-
-	//con->setSchema("chatprogram");
 	WSADATA wsa;
 	int code = WSAStartup(MAKEWORD(2, 2), &wsa);
 	string input_nick;
@@ -107,6 +104,8 @@ int main() {
 		//client_addr.sin_addr.s_addr = htonl(INADDR_ANY);
 
 		while (1) {
+
+			// id에 맞춰 닉네임을 출력 -> server창으로 send ~ 
 			con->setSchema("chatprogram");
 			pstmt = con->prepareStatement("SELECT nick_name FROM information WHERE id = ?;");
 			pstmt->setString(1, input_id);
@@ -116,18 +115,15 @@ int main() {
 				input_nick = result->getString("nick_name");
 			}
 
-
 			if (!connect(client_sock, (SOCKADDR*)&client_addr, sizeof(client_addr))) {
-				SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 10);   //글자 색 바꿔주는 함수 (빨간색)
+				SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 10);   //글자 색 바꿔주는 함수
 				cout << "닉네임은" << input_nick << "입니다." << endl;
 				cout << input_nick << "님의 채팅 시작" << endl;
 				cout << "-------------------------------------------------" << endl;
 				SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 15);
 				//cout << "Server Connect" << endl;
-				send(client_sock, input_nick.c_str(), input_nick.length(), 0);
-
+				send(client_sock, input_nick.c_str(), input_nick.length(), 0);//닉네임을 서버로 보내주기
 				break;
-				//닉네임을 서버로 보내주기
 			}
 			cout << "connecting..." << endl;
 		}
@@ -138,8 +134,7 @@ int main() {
 
 		while (1) { //채팅내용(문자열)받아서 보내주기
 			///////////////채팅창을 켠 상태로 회원 탈퇴했을 경우
-			///회원 찾아서 없으면 server에서 공지띄우고 count -- 하기
-
+			///회원 찾아서 없으면 server에서 공지띄우고 count - 1 하기
 			con->setSchema("chatprogram");
 			pstmt = con->prepareStatement("SELECT nick_name FROM information; ");
 			result = pstmt->executeQuery();
@@ -152,11 +147,11 @@ int main() {
 				}
 			}
 
-			if (!end_client) {
-				send(client_sock, "회원탈퇴로 인한 종료", strlen("회원탈퇴로 인한 종료"), 0);
+			if (end_client == 0) {
+				send(client_sock, "회원탈퇴로 인한 종료", strlen("회원탈퇴로 인한 종료"), 0); //서버로 전송 
 				cout << "회원 탈퇴 되었습니다" << endl;
 				cout << "더이상 메세지를 전송하실수 없습니다" << endl;
-				exit(1);
+				exit(1); //회원 탈퇴시 강제 종료 
 			}
 			else {
 				string text;
@@ -179,11 +174,10 @@ int main() {
 	return 0;
 }
 
-void korean() {
-
+void korean() {// 한글 인코딩을 위함
 	con->setSchema("chatprogram");
 	stmt = con->createStatement();
-	stmt->execute("set names euckr"); // 한글 인코딩을 위함
+	stmt->execute("set names euckr"); 
 	if (stmt) { delete stmt; stmt = nullptr; }
 }
 
@@ -226,7 +220,6 @@ void duplicate_login(string input, string query, bool check, string* create_inpu
 				check = 0;
 			}
 		}
-
 		if (check == 1) { cout << "잘못된 " << input << "입니다." << endl << "다시 입력하세요" << endl; }
 	}
 }
