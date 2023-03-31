@@ -34,8 +34,32 @@ const string password = "1234"; // 데이터베이스 접속 비밀번호
 void korean();
 void recv_prev_msg();
 void duplicate_login(string input, string query, bool check, string* create_input);
-int chat_recv();
 
+
+int chat_recv() {
+
+
+
+	char buf[MAX_SIZE] = {}; //메시지 입력, 출력 위함
+	string msg;
+	while (1) {
+		ZeroMemory(&buf, MAX_SIZE);
+		if (recv(client_sock, buf, MAX_SIZE, 0) > 0) {// 0: 정상종료 >0:값이 잘 들어감
+			msg = buf;
+			string user;
+			std::stringstream ss(msg); // stringstream = (slice해줌)-> user랑 masage분리
+			ss >> user;
+
+			//cout << buf << endl; 
+			// 전체가 보이면 헷갈리기 때문에 내 닉네임이 아닌 경우에만 출력
+			if (user != my_nick) cout << buf << endl; //같은 닉네임이 생성되지 않게 
+		}
+		else {
+			cout << "Server Off!" << endl;
+			return -1;
+		}
+	}
+}
 int main() {
 	try
 	{
@@ -51,20 +75,23 @@ int main() {
 	}
 	korean(); // 한국어 인코딩
 
-	recv_prev_msg();// 이전기록 출력
+	///////////////// 이전기록 출력////////////////////////////////////
+
+	recv_prev_msg();
 
 	///////////////// 로그인 ////////////////////////////////////
+
 	con->setSchema("chatprogram");
 
 	string input_id, input_pw;
 	bool check_id = 1, check_pw = 1;
 
-	duplicate_login("id", "SELECT id FROM information;", check_id, &input_id); // 로그인-아이디 (일치 검사)
-	duplicate_login("pw", "SELECT pw FROM information;", check_pw, &input_pw); // 로그인-비번  (일치 검사)
-
-
+	duplicate_login("id", "SELECT id FROM information;", check_id, &input_id); // 로그인-아이디
+	duplicate_login("pw", "SELECT pw FROM information;", check_pw, &input_pw); // 로그인-비번
 
 	////////////////////////////////////////////////////소켓통신  
+
+	//con->setSchema("chatprogram");
 	WSADATA wsa;
 	int code = WSAStartup(MAKEWORD(2, 2), &wsa);
 	string input_nick;
@@ -77,11 +104,9 @@ int main() {
 		client_addr.sin_family = AF_INET; //주소체계정의
 		client_addr.sin_port = htons(7777); //포트할당
 		InetPton(AF_INET, TEXT("127.0.0.1"), &client_addr.sin_addr);
+		//client_addr.sin_addr.s_addr = htonl(INADDR_ANY);
 
-		
-
-		while (1) {	
-			// id에 맞춰 닉네임을 출력 -> server창으로 send ~ 
+		while (1) {
 			con->setSchema("chatprogram");
 			pstmt = con->prepareStatement("SELECT nick_name FROM information WHERE id = ?;");
 			pstmt->setString(1, input_id);
@@ -91,31 +116,33 @@ int main() {
 				input_nick = result->getString("nick_name");
 			}
 
+
 			if (!connect(client_sock, (SOCKADDR*)&client_addr, sizeof(client_addr))) {
-				SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 9);   //글자 색 바꿔주는 함수
+				SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 9);   //글자 색 바꿔주는 함수 (빨간색)
 				cout << "닉네임은" << input_nick << "입니다." << endl;
 				cout << input_nick << "님의 채팅 시작" << endl;
 				cout << "-------------------------------------------------" << endl;
-				SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 15);
-				send(client_sock, input_nick.c_str(), input_nick.length(), 0);//닉네임을 서버로 보내주기
+				SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 15); 
+				//cout << "Server Connect" << endl;
+				send(client_sock, input_nick.c_str(), input_nick.length(), 0);
+
 				break;
+				//닉네임을 서버로 보내주기
 			}
 			cout << "connecting..." << endl;
 		}
 
-
-		std::thread th2(chat_recv); 
+		std::thread th2(chat_recv);
 		string find_nick;
-		bool end_client;  //회원이 탈퇴 했을 경우 
+		bool end_client = 0;  //회원이 탈퇴 했을 경우 
 
 		while (1) { //채팅내용(문자열)받아서 보내주기
 			///////////////채팅창을 켠 상태로 회원 탈퇴했을 경우
-			///회원 찾아서 없으면 server에서 공지띄우고 count - 1 하기
+			///회원 찾아서 없으면 server에서 공지띄우고 count -- 하기
+
 			con->setSchema("chatprogram");
 			pstmt = con->prepareStatement("SELECT nick_name FROM information; ");
 			result = pstmt->executeQuery();
-			end_client = 0;
-
 
 			while (result->next()) { //회원가입이 되어있을 경우 else문에서 정상동작 
 				find_nick = result->getString("nick_name");
@@ -125,18 +152,15 @@ int main() {
 				}
 			}
 
-			if (end_client == 0) {
-				send(client_sock, "회원탈퇴로 인한 종료", strlen("회원탈퇴로 인한 종료"), 0); //서버로 전송 
-				closesocket(client_sock);
+			if (!end_client) {
+				send(client_sock, "회원탈퇴로 인한 종료", strlen("회원탈퇴로 인한 종료"), 0);
 				cout << "회원 탈퇴 되었습니다" << endl;
 				cout << "더이상 메세지를 전송하실수 없습니다" << endl;
-				string msg = "[공지] " + my_nick + "회원탈퇴로 인한 종료";
-				send(client_sock, msg.c_str(), strlen(msg.c_str()), 0);
-				exit(1); //회원 탈퇴시 강제 종료 
+				exit(1);
 			}
-			else{
+			else {
 				string text;
-				std::getline(cin, text);  //문자열 입력받기 
+				std::getline(cin, text);
 				const char* buffer = text.c_str();
 				send(client_sock, buffer, strlen(buffer), 0);
 				end_client = 0;
@@ -155,33 +179,12 @@ int main() {
 	return 0;
 }
 
-void korean() {// 한글 인코딩을 위함
+void korean() {
+
 	con->setSchema("chatprogram");
 	stmt = con->createStatement();
-	stmt->execute("set names euckr");
+	stmt->execute("set names euckr"); // 한글 인코딩을 위함
 	if (stmt) { delete stmt; stmt = nullptr; }
-}
-
-int chat_recv() {
-	char buf[MAX_SIZE] = {}; //메시지 입력, 출력 위함
-	string msg;
-	while (1) {
-		ZeroMemory(&buf, MAX_SIZE);
-		if (recv(client_sock, buf, MAX_SIZE, 0) > 0) {// 0: 정상종료 >0:값이 잘 들어감
-			msg = buf;
-			string user;
-			std::stringstream ss(msg); // stringstream = (slice해줌)-> user랑 masage분리
-			ss >> user;
-
-			//cout << buf << endl; 
-			// 전체가 보이면 헷갈리기 때문에 내 닉네임이 아닌 경우에만 출력
-			if (user != my_nick) cout << buf << endl; //같은 닉네임이 생성되지 않게 
-		}
-		else {
-			cout << "\nServer Off!" << endl;
-			return -1;
-		}
-	}
 }
 
 void recv_prev_msg() {
@@ -212,7 +215,7 @@ void duplicate_login(string input, string query, bool check, string* create_inpu
 		cout << input << "를 입력하세요 -> \n";
 		cin >> *create_input;
 
-		// 확인 -> check_id == 0;
+		// ID 확인 -> check_id == 0;
 		con->setSchema("chatprogram");
 		pstmt = con->prepareStatement(query);
 		result = pstmt->executeQuery();
@@ -223,6 +226,7 @@ void duplicate_login(string input, string query, bool check, string* create_inpu
 				check = 0;
 			}
 		}
+
 		if (check == 1) { cout << "잘못된 " << input << "입니다." << endl << "다시 입력하세요" << endl; }
 	}
 }
