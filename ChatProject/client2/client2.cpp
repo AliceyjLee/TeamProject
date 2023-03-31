@@ -33,7 +33,7 @@ const string password = "1234"; // 데이터베이스 접속 비밀번호
 
 void korean();
 void recv_prev_msg();
-void duplicate_login(string input, string query, bool check, string* create_input);
+void duplicate_login(string input, string query, bool *check, string *create_input);
 int chat_recv();
 
 int main() {
@@ -59,9 +59,8 @@ int main() {
 	string input_id, input_pw;
 	bool check_id = 1, check_pw = 1;
 
-	duplicate_login("id", "SELECT id FROM information;", check_id, &input_id); // 로그인-아이디 (일치 검사)
-	duplicate_login("pw", "SELECT pw FROM information;", check_pw, &input_pw); // 로그인-비번  (일치 검사)
-
+	duplicate_login("id", "SELECT id FROM information;", &check_id, &input_id); // 로그인-아이디 (일치 검사)
+	duplicate_login("pw", "SELECT pw FROM information;", &check_pw, &input_pw); // 로그인-비번  (일치 검사)
 
 
 	////////////////////////////////////////////////////소켓통신  
@@ -201,13 +200,13 @@ void recv_prev_msg() {
 	cout << "------------------------------------------" << endl;
 }
 
-void duplicate_login(string input, string query, bool check, string* create_input) {
+void duplicate_login(string input, string query, bool *check, string *create_input) {
 
 	string find;
 
-	while (check == 1) {
+	while (*check == 1) {
 
-		check = 1;
+		*check = 1;
 
 		cout << input << "를 입력하세요 -> \n";
 		cin >> *create_input;
@@ -219,10 +218,12 @@ void duplicate_login(string input, string query, bool check, string* create_inpu
 
 		while (result->next()) {
 			find = result->getString(input);
-			if (find == *create_input) {
+			if (*create_input == find) {
 				check = 0;
 			}
 		}
-		if (check == 1) { cout << "잘못된 " << input << "입니다." << endl << "다시 입력하세요" << endl; }
+		if (*check == 1) { 
+			cout << "잘못된 " << input << "입니다." << endl << "다시 입력하세요" << endl;
+		}
 	}
 }
