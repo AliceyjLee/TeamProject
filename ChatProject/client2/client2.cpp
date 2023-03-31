@@ -75,12 +75,7 @@ int main() {
 	}
 	korean(); // 한국어 인코딩
 
-	///////////////// 이전기록 출력////////////////////////////////////
-
-	recv_prev_msg();
-
 	///////////////// 로그인 ////////////////////////////////////
-
 	con->setSchema("chatprogram");
 
 	string input_id, input_pw;
@@ -88,6 +83,10 @@ int main() {
 
 	duplicate_login("id", "SELECT id FROM information;", check_id, &input_id); // 로그인-아이디
 	duplicate_login("pw", "SELECT pw FROM information;", check_pw, &input_pw); // 로그인-비번
+
+	///////////////// 이전기록 출력////////////////////////////////////
+
+	recv_prev_msg();
 
 	////////////////////////////////////////////////////소켓통신  
 
