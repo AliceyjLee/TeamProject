@@ -68,14 +68,16 @@ int main() {
 		for (int i = 0; i < MAX_CLIENT; i++) {
 			th1[i] = std::thread(add_client);
 		}
-		while (1) { // 메세지 출력
+
+		while (1) {
 			string text, msg = "";
 			std::getline(cin, text);
+
 			const char* buf = text.c_str();
+
 			msg = server_sock.user + " : " + buf;
 			send_msg(msg.c_str());
 		}
-
 		for (int i = 0; i < MAX_CLIENT; i++) {
 			th1[i].join();
 		}
@@ -126,11 +128,11 @@ void add_client() {
 
 	sck_list.push_back(new_client);
 
-	string bf = {};
+
 	std::thread th(recv_msg, client_count);
 	client_count++;
-	cout << "[공지] 현재 접속자 수 : " << client_count << "명" << endl;
 
+	cout << "[공지] 현재 접속자 수 : " << client_count << "명" << endl;
 	send_msg(msg.c_str());
 	th.join();
 }
@@ -150,28 +152,26 @@ void recv_msg(int idx) {
 	while (1) {
 		ZeroMemory(&buf, MAX_SIZE);
 		if (recv(sck_list[idx].sck, buf, MAX_SIZE, 0) > 0) {
-			msg = sck_list[idx].user + " : " + buf; 
-				cout << msg << endl;
-				pstmt = con->prepareStatement("INSERT INTO message(user_nick_name, user_message) VALUES(?,?)");
-				pstmt->setString(1, sck_list[idx].user);
-				pstmt->setString(2, string(buf));
-				pstmt->execute();
-				send_msg(msg.c_str());			
+
+			//////////////////////if 문으로 버퍼에 "종료"가 담겨있을 경우 공지 띄우고 del_client
+			if (buf == "회원탈퇴로 인한 종료") { del_client(idx); }
+
+			msg = sck_list[idx].user + " : " + buf;
+			cout << msg << endl;
+			pstmt = con->prepareStatement("INSERT INTO message(user_nick_name, user_message) VALUES(?,?)");
+			pstmt->setString(1, sck_list[idx].user);
+			pstmt->setString(2, string(buf));
+			pstmt->execute();
+
+			send_msg(msg.c_str());			
 		}
+
 		else {
-			if (buf == "회원탈퇴로 인한 종료") {
-				recv(sck_list[0].sck, buf, MAX_SIZE, 0);
-				cout << "[공지]" << sck_list[idx].user << "님의 탈퇴로 인한 채팅 종료" << endl;
-				cout << "[공지]" << sck_list[idx].user << "님이 퇴장했습니다." << endl;
-				del_client(idx);
-			}
-			else {
-				msg = "[공지]" + sck_list[idx].user + "님이 퇴장했습니다.";
-				cout << msg << endl;
-				send_msg(msg.c_str());
-				del_client(idx);
-				return;
-			}
+			msg = "[공지]" + sck_list[idx].user + "님이 퇴장했습니다.";
+			cout << msg << endl;
+			send_msg(msg.c_str());
+			del_client(idx);
+			return;
 		}
 	}
 }
